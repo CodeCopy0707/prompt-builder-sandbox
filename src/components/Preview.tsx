@@ -16,12 +16,7 @@ const Preview = ({ componentData }: PreviewProps) => {
     
     setLoading(true);
     
-    const iframe = iframeRef.current;
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-    
-    if (!iframeDoc) return;
-    
-    // Create the content for the iframe
+    // Create a blob URL from the HTML content
     const htmlContent = `
       <!DOCTYPE html>
       <html lang="en">
@@ -48,21 +43,32 @@ const Preview = ({ componentData }: PreviewProps) => {
       </html>
     `;
     
-    // Write the content to the iframe
-    iframeDoc.open();
-    iframeDoc.write(htmlContent);
-    iframeDoc.close();
+    // Create a blob and URL for the HTML content
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const blobURL = URL.createObjectURL(blob);
     
-    // Handle iframe load event
-    iframe.onload = () => {
-      setLoading(false);
-    };
+    // Set the iframe src to the blob URL
+    if (iframeRef.current) {
+      iframeRef.current.src = blobURL;
+      
+      // Handle iframe load event
+      iframeRef.current.onload = () => {
+        setLoading(false);
+        // Clean up the blob URL when the iframe has loaded
+        URL.revokeObjectURL(blobURL);
+      };
+    }
     
     // Fallback for loading state in case onload doesn't fire
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       setLoading(false);
     }, 1000);
     
+    return () => {
+      // Clean up on unmount or when component data changes
+      if (blobURL) URL.revokeObjectURL(blobURL);
+      clearTimeout(timeout);
+    };
   }, [componentData]);
 
   return (
