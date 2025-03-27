@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Loader2, Send, Sparkles, HelpCircle } from "lucide-react";
+import { Loader2, Send, Sparkles, HelpCircle, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,9 +31,9 @@ const PromptInput = ({ onSubmit, isLoading }: PromptInputProps) => {
   };
 
   const examplePrompts = [
-    "Create a responsive pricing card with a hover effect, featuring a title, price, list of features, and a CTA button",
-    "Design a navigation menu with dropdown submenus and mobile responsiveness",
-    "Build a login form with validation and a 'forgot password' link"
+    "Create a responsive pricing card with a hover effect",
+    "Build a testimonial carousel with user avatars",
+    "Design a contact form with validation and error states"
   ];
 
   const handleExampleClick = (example: string) => {
@@ -47,7 +47,7 @@ const PromptInput = ({ onSubmit, isLoading }: PromptInputProps) => {
           <div className="flex items-center justify-between">
             <label htmlFor="prompt" className="text-sm font-medium text-foreground flex items-center gap-2">
               <Sparkles size={16} className="text-primary" />
-              Describe the component you want to build
+              Describe your component
               
               <TooltipProvider>
                 <Tooltip>
@@ -59,7 +59,7 @@ const PromptInput = ({ onSubmit, isLoading }: PromptInputProps) => {
                   </TooltipTrigger>
                   <TooltipContent>
                     <p className="max-w-xs">
-                      Be specific about design elements, functionality, and any special features you want included.
+                      Be specific about design, functionality, and features you want included.
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -78,14 +78,14 @@ const PromptInput = ({ onSubmit, isLoading }: PromptInputProps) => {
         </div>
         
         <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-          <div className="flex flex-wrap gap-2">
-            <span className="text-xs text-foreground/60 mt-1">Try:</span>
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-foreground/60">Try:</span>
             {examplePrompts.map((example, index) => (
               <button
                 key={index}
                 type="button"
                 onClick={() => handleExampleClick(example)}
-                className="text-xs px-2 py-1 bg-secondary/50 hover:bg-secondary rounded-md text-foreground/80"
+                className="text-xs px-2 py-1 bg-secondary/50 hover:bg-secondary rounded-md text-foreground/80 transition-colors"
               >
                 {example.length > 30 ? example.substring(0, 30) + '...' : example}
               </button>
@@ -95,11 +95,7 @@ const PromptInput = ({ onSubmit, isLoading }: PromptInputProps) => {
           <Button
             type="submit"
             disabled={isLoading || !prompt.trim()}
-            className={`px-6 sm:w-auto w-full ${
-              isLoading || !prompt.trim() 
-                ? "bg-muted text-muted-foreground" 
-                : "bg-primary text-white hover:bg-primary/90"
-            }`}
+            className="px-6 sm:w-auto w-full transition-all"
           >
             {isLoading ? (
               <>
@@ -108,8 +104,8 @@ const PromptInput = ({ onSubmit, isLoading }: PromptInputProps) => {
               </>
             ) : (
               <>
-                <Send size={18} className="mr-2" />
                 <span>Generate Component</span>
+                <ArrowRight size={18} className="ml-2" />
               </>
             )}
           </Button>

@@ -65,14 +65,13 @@ const Preview = ({ componentData }: PreviewProps) => {
     }, 1000);
     
     return () => {
-      // Clean up on unmount or when component data changes
       if (blobURL) URL.revokeObjectURL(blobURL);
       clearTimeout(timeout);
     };
   }, [componentData]);
 
   return (
-    <div className="w-full h-96 bg-background rounded-lg shadow-sm border border-border overflow-hidden flex flex-col">
+    <div className="w-full h-[500px] bg-background rounded-lg shadow-sm border border-border overflow-hidden flex flex-col">
       <div className="bg-muted px-4 py-2 border-b border-border flex items-center">
         <div className="flex space-x-2">
           <div className="w-3 h-3 rounded-full bg-destructive/70"></div>
@@ -97,7 +96,7 @@ const Preview = ({ componentData }: PreviewProps) => {
         {!componentData && !loading && (
           <div className="absolute inset-0 flex items-center justify-center">
             <p className="text-muted-foreground text-center px-4">
-              Your component preview will appear here after generation
+              Your component preview will appear here
             </p>
           </div>
         )}
