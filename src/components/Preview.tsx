@@ -35,9 +35,18 @@ const Preview = ({ componentData }: PreviewProps) => {
         </style>
       </head>
       <body>
-        <div id="root">${componentData.html}</div>
+        <div id="preview-root">${componentData.html}</div>
         <script>
-          ${componentData.javascript}
+          // Wrap in IIFE to avoid global scope pollution
+          (function() {
+            ${componentData.javascript}
+          })();
+          
+          // Handle any errors in the preview
+          window.onerror = function(message, source, lineno, colno, error) {
+            console.error('Preview error:', message);
+            return true; // Prevents the default browser error handling
+          };
         </script>
       </body>
       </html>
