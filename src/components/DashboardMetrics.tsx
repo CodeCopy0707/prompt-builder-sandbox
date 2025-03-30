@@ -1,8 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip } from "chart.js";
-import { CodeBracket, Server, Gauge, Sparkles } from "lucide-react";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Code, Server, Gauge, Sparkles } from "lucide-react";
 
 interface MetricsProps {
   metrics: {
@@ -19,7 +18,7 @@ const DashboardMetrics = ({ metrics }: MetricsProps) => {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center">
-            <CodeBracket className="h-4 w-4 mr-2 text-primary" />
+            <Code className="h-4 w-4 mr-2 text-primary" />
             Components
           </CardTitle>
           <CardDescription>Total generated</CardDescription>
