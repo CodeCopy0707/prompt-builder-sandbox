@@ -5,8 +5,17 @@ import { toast } from "sonner";
 const API_KEY = "AIzaSyDc7u7wTVdDG3zP18xnELKs0HX7-hImkmc";
 const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
+// Map of model IDs to API URLs
+const MODEL_URLS = {
+  "gemini-1.5-flash": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+  "gemini-1.5-pro": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent",
+  // In a real app, these would be different API endpoints for different models
+  "gpt-4o": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent",
+  "claude-3": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent",
+};
+
 const systemPrompt = `
-You are a component builder AI. You create high-quality, functional React components based on user prompts.
+You are a component builder AI. You create high-quality, functional components based on user prompts.
 You must always return a response in the following JSON format:
 {
   "html": "<!-- HTML code here, escaped properly for JSON -->",
@@ -20,11 +29,20 @@ Include all necessary imports in the JavaScript section.
 Ensure the CSS is well-organized and the HTML is semantic.
 Do not include React import statements, they will be added automatically.
 Use Tailwind CSS for styling when possible.
+
+If the user requests:
+- Data visualization: Include D3.js code examples
+- 3D graphics: Include Three.js examples
+- Creative coding: Include p5.js examples
+- Backend integration: Include API endpoint examples with Express.js
+- Database: Include MongoDB/PostgreSQL schema and query examples
 `;
 
-export async function generateComponent(prompt: string): Promise<GeminiResponse> {
+export async function generateComponent(prompt: string, model: string = "gemini-1.5-flash"): Promise<GeminiResponse> {
   try {
-    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+    const modelUrl = MODEL_URLS[model as keyof typeof MODEL_URLS] || MODEL_URLS["gemini-1.5-flash"];
+    
+    const response = await fetch(`${modelUrl}?key=${API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

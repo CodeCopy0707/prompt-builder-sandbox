@@ -1,11 +1,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ComponentData } from "@/types";
-import { Loader2, RefreshCw, AlertCircle, Code, CheckCircle2 } from "lucide-react";
+import { Loader2, RefreshCw, AlertCircle, Code, CheckCircle2, Maximize2, Minimize2, Fullscreen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 
 interface PreviewProps {
   componentData: ComponentData | null;
@@ -16,11 +23,23 @@ const Preview = ({ componentData }: PreviewProps) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [viewportSize, setViewportSize] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const handleRefresh = () => {
     setLoading(true);
     setError(null);
     setRefreshKey(prev => prev + 1);
+  };
+
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
+  const viewportSizes = {
+    desktop: { width: "100%", height: "600px" },
+    tablet: { width: "768px", height: "600px" },
+    mobile: { width: "375px", height: "600px" }
   };
 
   useEffect(() => {
@@ -38,6 +57,9 @@ const Preview = ({ componentData }: PreviewProps) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Component Preview</title>
         <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+        <script src="https://cdn.jsdelivr.net/npm/three@0.133.0/build/three.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
         <style>
           body {
             margin: 0;
@@ -72,6 +94,9 @@ const Preview = ({ componentData }: PreviewProps) => {
       <body>
         <div class="preview-container animate-fade">
           <div id="preview-root">${componentData.html}</div>
+          <div id="viz-container"></div>
+          <div id="threejs-container"></div>
+          <div id="p5-container"></div>
         </div>
         <script>
           // Communication channel with parent
@@ -93,6 +118,17 @@ const Preview = ({ componentData }: PreviewProps) => {
           // Wrap user code in IIFE with error handling
           try {
             (function() {
+              // Create a data object for D3 visualizations if needed
+              const data = [
+                { name: "Jan", value: 400 },
+                { name: "Feb", value: 300 },
+                { name: "Mar", value: 600 },
+                { name: "Apr", value: 780 },
+                { name: "May", value: 500 },
+                { name: "Jun", value: 620 },
+                { name: "Jul", value: 750 }
+              ];
+              
               ${componentData.javascript}
             })();
             window.parent.postMessage({ type: 'success' }, '*');
@@ -148,7 +184,13 @@ const Preview = ({ componentData }: PreviewProps) => {
   }, [componentData, refreshKey]);
 
   return (
-    <div className="w-full h-[600px] bg-background rounded-lg shadow-sm border border-border overflow-hidden flex flex-col">
+    <div 
+      className={`
+        w-full ${isFullscreen ? 'fixed inset-0 z-50 bg-background p-6' : 'relative'} 
+        bg-background rounded-lg shadow-sm border border-border overflow-hidden flex flex-col
+      `}
+      style={isFullscreen ? { height: '100vh' } : { height: '600px' }}
+    >
       <div className="bg-muted px-4 py-2 border-b border-border flex items-center justify-between">
         <div className="flex space-x-2">
           <div className="w-3 h-3 rounded-full bg-destructive/70"></div>
@@ -159,6 +201,17 @@ const Preview = ({ componentData }: PreviewProps) => {
           <span className="text-xs font-medium text-foreground/60">Live Preview</span>
         </div>
         <div className="flex items-center gap-2">
+          <Select value={viewportSize} onValueChange={(value) => setViewportSize(value as any)}>
+            <SelectTrigger className="h-7 w-28 text-xs">
+              <SelectValue placeholder="Viewport" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="desktop">Desktop</SelectItem>
+              <SelectItem value="tablet">Tablet</SelectItem>
+              <SelectItem value="mobile">Mobile</SelectItem>
+            </SelectContent>
+          </Select>
+          
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -179,6 +232,27 @@ const Preview = ({ componentData }: PreviewProps) => {
             </Tooltip>
           </TooltipProvider>
           
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={toggleFullscreen}
+                >
+                  {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+                  <span className="sr-only">
+                    {isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                  </span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
           <HoverCard>
             <HoverCardTrigger asChild>
               <Button variant="ghost" size="icon" className="h-7 w-7">
@@ -189,10 +263,10 @@ const Preview = ({ componentData }: PreviewProps) => {
             <HoverCardContent className="w-80">
               <div className="flex justify-between space-x-4">
                 <div className="space-y-1">
-                  <h4 className="text-sm font-semibold">Sandbox Environment</h4>
+                  <h4 className="text-sm font-semibold">Enhanced Sandbox Environment</h4>
                   <p className="text-sm text-muted-foreground">
-                    This preview runs in an isolated sandbox with Tailwind CSS. JavaScript execution is
-                    contained within the preview.
+                    This preview runs in an isolated sandbox with Tailwind CSS, D3.js, Three.js, and p5.js pre-loaded. 
+                    JavaScript execution is contained within the preview.
                   </p>
                 </div>
               </div>
@@ -238,13 +312,25 @@ const Preview = ({ componentData }: PreviewProps) => {
           </div>
         )}
         
-        <iframe 
-          ref={iframeRef}
-          title="Component Preview"
-          className="w-full h-full border-0 transition-opacity duration-200"
-          sandbox="allow-scripts allow-same-origin"
-          style={{ opacity: loading ? 0.5 : 1 }}
-        />
+        <div className="w-full h-full flex items-center justify-center">
+          <div 
+            className="transition-all duration-300 ease-in-out mx-auto border-x border-muted/30"
+            style={{
+              width: viewportSizes[viewportSize].width !== "100%" ? viewportSizes[viewportSize].width : "100%",
+              height: "100%"
+            }}
+          >
+            <iframe 
+              ref={iframeRef}
+              title="Component Preview"
+              className="w-full h-full border-0 transition-opacity duration-200"
+              sandbox="allow-scripts allow-same-origin"
+              style={{ 
+                opacity: loading ? 0.5 : 1,
+              }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
